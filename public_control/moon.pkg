@@ -1,0 +1,3 @@
+import {
+  "repro/internal_library/public_y" @y,
+} for "test"

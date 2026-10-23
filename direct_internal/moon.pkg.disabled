@@ -1,0 +1,3 @@
+import {
+  "repro/internal_library/internal/x",
+} for "test"
