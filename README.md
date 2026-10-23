@@ -4,6 +4,14 @@ Keep this repository beside the provider repository, with directory names
 `consumer` and `library`. `moon.work` resolves the library locally while keeping
 the two modules distinct. Run the commands below from this directory.
 
+```sh
+git clone https://github.com/bobzhang/moonbit-internal-reexport-library.git library
+git clone https://github.com/bobzhang/moonbit-internal-reexport-consumer.git consumer
+cd consumer
+```
+
+Provider source: [moonbit-internal-reexport-library](https://github.com/bobzhang/moonbit-internal-reexport-library).
+
 Toolchain tested: moon 0.1.20261021 (a4f8933), moonc
 v0.10.17+093cb8f9c (2026-10-21).
 
