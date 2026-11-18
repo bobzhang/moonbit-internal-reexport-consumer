@@ -1,0 +1,46 @@
+name: Reproducer controls
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        moonbit: [latest, pre-release]
+    defaults:
+      run:
+        working-directory: consumer
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: consumer
+      - uses: actions/checkout@v5
+        with:
+          repository: bobzhang/moonbit-internal-reexport-library
+          path: library
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "${{ matrix.moonbit }}"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - run: moon version --all
+      - run: moon update
+      - run: moon fmt --check
+      - run: moon check ../library/y public_control --target all --deny-warn
+      - run: moon test ../library/y public_control --target all
+      - name: Verify expected visibility diagnostics
+        run: |
+          python3 - <<'PYCODE'
+          import json, subprocess
+          for package in ['constructor', 'method', 'error', 'error_inferred']:
+              result = subprocess.run(['moon', 'check', package, '--target', 'all', '--deny-warn', '--json'], capture_output=True, text=True)
+              report = json.loads(result.stdout)
+              errors = [item for item in report['diagnostics'] if item['level'] == 'error']
+              assert result.returncode != 0 and errors, (package, result.stdout, result.stderr)
+              assert all(item['error_code'] == 4037 for item in errors), (package, errors)
+              print(package + ': expected diagnostic 4037 confirmed')
+          PYCODE
